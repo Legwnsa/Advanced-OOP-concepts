@@ -1,105 +1,74 @@
-Library Management APi
-Purpose:
-Library Management API allows managing books, authors, and different types of books (EBook and PrintedBook) through console-based CRUD operations. The project demonstrates object-oriented programming principles, JDBC database operations, and exception handling.
+A. SOLID Documentation
 
-Entities and Relationships:
-BookBase (abstract)
-Subclasses: EBook, PrintedBook
-Fields: id, name, price, author (for PrintedBook), type
-BookBase contains Author (composition)
+• SRP: BookRepository - responsible CRUD operations with books, doesn't include business logics.
+BookService - responsible only for Business logics: validation, fine calculating, check for validation.
+BookController - responsible only for input/output and sends information to the service.
 
-Database Tables:
-authors
-books
+• OCP: BookBase - abstract class, easily deals with new (EBook, PrintedBook) without changing existing classes.
 
-Relationships:
-One Author can have many PrintedBooks
-EBooks have no authors
+• LSP - All methods works with BookBase and with any subclasses
 
-Abstract Class:
-BookBase
-Fields: id, name, price
-Abstract methods: type(), fine(), valid()
-Concrete methods: getters/setters for encapsulation
+• ISP Valid and Fine interfaces specialized exactly for their functions, classes implements only interfaces that are needed
 
-Subclasses:
-1)EBook
-Field: price, author, 
-Implements type(), fine(), valid()
-2)PrintedBook
-Field: price, author
-Implements type(), fine(), valid()
+• DIP BookService depends on repository
 
-Interfaces:
-Validatable have valid() ensures proper business rules
-Composition / Aggregation:
-PrintedBook has an Author
+B. Advanced OOP Features
+Must include short explanations of where you used:
+• Generics in SortingUtils
+• Lambdas Sorting and filtering in SortingUtils
+• Reflection ReflectionUtils.inspectClass(PrintedBook.class) outputs rows, methods and type of classes
+• Interface default/static methods Default method:validateOrThrow() in Valid checks if book is valid; Static method: Valid.alwaysTrue() demonstrates static metod of interface
+C. OOP Documentation
+• Abstract class + subclasses: BookBase + EBook, PrintedBook
+• Composition relationships: Printed Book -> Author example of composition
+• Polymorphism examples: List<BookBase> involves object of both Ebook and PrintedBook types
+• UML diagram (updated):
 
-Polymorphism Example:
 
-BookBase b1 = new EBook("Effective Java", 15.99);
-BookBase b2 = new PrintedBook("Dune", 19.99, herbert);
-System.out.println(b1.type()); // "EBOOK"
-System.out.println(b2.type()); // "PRINTED"
-
-Database Description
-Schema:
-CREATE TABLE authors (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+D. Database Section
+• Schema: CREATE TABLE authors (
+                         id SERIAL PRIMARY KEY,
+                         name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE books (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(20) NOT NULL,
-    price NUMERIC(10,2) NOT NULL,
-    author_id INT,
-    CONSTRAINT fk_author FOREIGN KEY(author_id) REFERENCES authors(id)
+                       id SERIAL PRIMARY KEY,
+                       name VARCHAR(255) NOT NULL,
+                       type VARCHAR(20) NOT NULL,
+                       price NUMERIC(10,2) NOT NULL,
+                       author_id INT,
+                       CONSTRAINT fk_author FOREIGN KEY(author_id) REFERENCES authors(id)
 );
 
-Sample Inserts:
-
-INSERT INTO authors(name) VALUES ('Frank Herbert'), ('J.K. Rowling');
-
-INSERT INTO books(name, type, price, author_id) VALUES
-('Dune', 'PRINTED', 19.99, 1),
-('Harry Potter', 'PRINTED', 25.50, 2),
-('Effective Java', 'EBOOK', 15.99, NULL),
-('Invisible Man', 'EBOOK', 9.99, NULL);
-
-Controller / Main Demo
-Creating Books and Authors:
-
-Author herbert = new Author("Frank Herbert", 1);
-Author rowling = new Author("J.K. Rowling", 2);
-
-BookBase ebook = new EBook("Effective Java", 15.99);
-BookBase printed = new PrintedBook("Dune", 19.99, herbert);
-
-service.addBook(ebook);
-service.addBook(printed);
 
 
-CRUD Operations:
+• Constraints: NOT NULL to crucial rows and Foreign key for connection between author and their book
+• Sample inserts: INSERT INTO authors (name) VALUES ('J.K. Rowling');
+INSERT INTO authors (name) VALUES ('Frank Herbert');
 
-service.getBookById(1);
-service.updateBook(1, updatedBook);
-service.deleteBook(2);
-service.getBooks().forEach(b -> System.out.println(b.Info()));
+INSERT INTO books (name, type, price, author_id) VALUES
+('Harry Potter', 'PRINTED', 25.50, 1),
+('Dune', 'PRINTED', 19.99, 2),
+('Effective Java', 'EBOOK', 15.99, NULL);
+
+E. Architecture Explanation
+• Controller, service, repository roles:
+Controller - sends operations to service, doesn't include business logics
+Service - apllies business logics(validation, fine calculation etc) and calls repository through interface
+Repository - CRUD operations with BD, none of business logics
+• Examples of request/response behavior: Main -> Controller.addBook(book) -> Service.validateOrThrow() -> Repository.create(book)
+
+F. Execution Instructions
+• How to compile and run: javac -d out $(find src -name "*.java")
+java -cp out Main
+
+• Requirements (Java version, DB connection): java 17+ in DatabaseConnection.java place own connection
+G. Screenshots
+Show:<img width="388" height="658" alt="Снимок экрана 2026-02-04 224647" src="https://github.com/user-attachments/assets/847ced06-3c41-4999-bf8d-bd929e4debba" /><img width="866" height="666" alt="Снимок экрана 2026-02-04 225322" src="https://github.com/user-attachments/assets/88bc62f2-0d8a-48a3-bd10-fcf8ee5fa2c2" /><img width="936" height="798" alt="Снимок экрана 2026-02-04 225335" src="https://github.com/user-attachments/assets/026a41de-9534-4e33-88f1-fc53856b9b35" />
 
 
-Validation Example:
-
-BookBase invalid = new PrintedBook("", -5, herbert);
-service.addBook(invalid); // throws InvalidInputException
-
-Instructions to Compile and Run
-Add PostgreSQL JDBC driver (postgresql-42.7.8.jar) to classpath.
-Compile and run.
-
-Screenshots:<img width="788" height="616" alt="image" src="https://github.com/user-attachments/assets/2f8d7ff1-910b-4484-be1d-02d0e60cc5d8" />
-
-
-I learned: Working with JDBC, connections, and SQL queries, Implementing multi-layer architecture: Controller to Service to Repository, Applying OOP: abstraction, inheritance, interfaces, composition,Using polymorphism to handle EBooks and PrintedBooks through the same interface
-
+H. Reflection
+• What you learned: How to u
+se Reflection to analyze classes, how Lambda simplifies sorting and filtrating.
+• Challenges: At the first time i didn't really understood how to combine interfaces with abstract classes for SOLID operations
+• Value of SOLID architecture: Clear architecture simplifies everything
